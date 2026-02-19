@@ -1,9 +1,3 @@
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.Period
-import java.time.format.DateTimeFormatter
-import java.util.UUID
-
 enum class Sexo { MASCULINO, FEMININO, OUTRO, PREFIRO_NAO_DIZER }
 
 enum class TipoEvento {
@@ -23,9 +17,9 @@ data class Empresa(
 )
 
 data class Usuario(
-    val id: String = UUID.randomUUID().toString(),
+    val id: String = java.util.UUID.randomUUID().toString(),
     var nome: String,
-    var dataNascimento: LocalDate,
+    var dataNascimento: java.time.LocalDate,
     var sexo: Sexo,
     val email: String, // não pode mudar
     var senha: String,
@@ -34,13 +28,13 @@ data class Usuario(
 )
 
 data class Evento(
-    val id: String = UUID.randomUUID().toString(),
+    val id: String = java.util.UUID.randomUUID().toString(),
     val organizadorId: String,
     var pagina: String,
     var nome: String,
     var descricao: String,
-    var inicio: LocalDateTime,
-    var fim: LocalDateTime,
+    var inicio: java.time.LocalDateTime,
+    var fim: java.time.LocalDateTime,
     var tipo: TipoEvento,
     var modalidade: ModalidadeEvento,
     var capacidade: Int,
@@ -53,7 +47,7 @@ data class Evento(
 )
 
 data class Ingresso(
-    val id: String = UUID.randomUUID().toString(),
+    val id: String = java.util.UUID.randomUUID().toString(),
     val usuarioId: String,
     val eventoId: String,
     var status: StatusIngresso = StatusIngresso.ATIVO,
@@ -65,14 +59,13 @@ fun main() {
     val eventos = mutableListOf<Evento>()
     val ingressos = mutableListOf<Ingresso>()
 
-    val fmtDataHora = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
-    val fmtData = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    val fmtDataHora = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+    val fmtData = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
     var opcao = ""
 
     do {
-        // Atualiza eventos que já passaram do fim: não devem aparecer no feed (US11)
-        val agora = LocalDateTime.now()
+        val agora = java.time.LocalDateTime.now()
         for (ev in eventos) {
             if (ev.fim.isBefore(agora) && ev.ativo) {
                 ev.ativo = false
@@ -121,7 +114,7 @@ fun main() {
                 if (usuarios.any { it.email.equals(email, ignoreCase = true) }) {
                     println(" Não podem existir dois usuários com o mesmo e-mail.")
                 } else {
-                    val dn = runCatching { LocalDate.parse(dnStr, fmtData) }.getOrNull()
+                    val dn = runCatching { java.time.LocalDate.parse(dnStr, fmtData) }.getOrNull()
                     if (dn == null) {
                         println(" Data inválida.")
                     } else {
@@ -147,7 +140,7 @@ fun main() {
                 if (usuarios.any { it.email.equals(email, ignoreCase = true) }) {
                     println(" Não podem existir dois usuários com o mesmo e-mail.")
                 } else {
-                    val dn = runCatching { LocalDate.parse(dnStr, fmtData) }.getOrNull()
+                    val dn = runCatching { java.time.LocalDate.parse(dnStr, fmtData) }.getOrNull()
                     if (dn == null) {
                         println(" Data inválida.")
                     } else {
@@ -192,7 +185,7 @@ fun main() {
                         if (novaSenha.isNotBlank()) u.senha = novaSenha
 
                         if (novoDnStr.isNotBlank()) {
-                            val dn = runCatching { LocalDate.parse(novoDnStr, fmtData) }.getOrNull()
+                            val dn = runCatching { java.time.LocalDate.parse(novoDnStr, fmtData) }.getOrNull()
                             if (dn != null) u.dataNascimento = dn else println(" Data inválida, mantendo a anterior.")
                         }
 
@@ -228,7 +221,7 @@ fun main() {
 
                 if (u == null) println(" Usuário não encontrado.")
                 else {
-                    val p = Period.between(u.dataNascimento, LocalDate.now())
+                    val p = java.time.Period.between(u.dataNascimento, java.time.LocalDate.now())
                     println("\n=== PERFIL ===")
                     println("Nome: ${u.nome}")
                     println("E-mail: ${u.email}")
@@ -256,7 +249,7 @@ fun main() {
                     if (senha != u.senha) println(" Senha incorreta.")
                     else if (!u.ativo) println(" Usuário já está inativo.")
                     else {
-                        val agora2 = LocalDateTime.now()
+                        val agora2 = java.time.LocalDateTime.now()
                         val temEventoAtivoOuEmExecucao = eventos.any {
                             it.organizadorId == u.id && it.ativo && agora2.isBefore(it.fim)
                         }
@@ -325,12 +318,12 @@ fun main() {
                         if (pid.isNotBlank()) principalId = pid
                     }
 
-                    val inicio = runCatching { LocalDateTime.parse(iniStr, fmtDataHora) }.getOrNull()
-                    val fim = runCatching { LocalDateTime.parse(fimStr, fmtDataHora) }.getOrNull()
+                    val inicio = runCatching { java.time.LocalDateTime.parse(iniStr, fmtDataHora) }.getOrNull()
+                    val fim = runCatching { java.time.LocalDateTime.parse(fimStr, fmtDataHora) }.getOrNull()
 
                     if (inicio == null || fim == null) println(" Data/hora inválida.")
                     else {
-                        val agora3 = LocalDateTime.now()
+                        val agora3 = java.time.LocalDateTime.now()
                         val durMin = java.time.Duration.between(inicio, fim).toMinutes()
 
                         if (inicio.isBefore(agora3)) println(" Início não pode ser anterior à data corrente.")
@@ -400,7 +393,6 @@ fun main() {
                         print("Local/Link (enter mantém): "); val local = readLine()?.trim() ?: ""
                         print("Preço (enter mantém): "); val precoStr = readLine()?.trim() ?: ""
 
-                        // alterações simples
                         if (pagina.isNotBlank()) ev.pagina = pagina
                         if (nome.isNotBlank()) ev.nome = nome
                         if (desc.isNotBlank()) ev.descricao = desc
@@ -416,20 +408,19 @@ fun main() {
                             if (pr != null && pr >= 0.0) ev.preco = pr
                         }
 
-                        // datas com validação mínima
                         var novoInicio = ev.inicio
                         var novoFim = ev.fim
 
                         if (iniStr.isNotBlank()) {
-                            val i = runCatching { LocalDateTime.parse(iniStr, fmtDataHora) }.getOrNull()
+                            val i = runCatching { java.time.LocalDateTime.parse(iniStr, fmtDataHora) }.getOrNull()
                             if (i != null) novoInicio = i
                         }
                         if (fimStr.isNotBlank()) {
-                            val f = runCatching { LocalDateTime.parse(fimStr, fmtDataHora) }.getOrNull()
+                            val f = runCatching { java.time.LocalDateTime.parse(fimStr, fmtDataHora) }.getOrNull()
                             if (f != null) novoFim = f
                         }
 
-                        val agora4 = LocalDateTime.now()
+                        val agora4 = java.time.LocalDateTime.now()
                         val durMin = java.time.Duration.between(novoInicio, novoFim).toMinutes()
 
                         if (novoInicio.isBefore(agora4) || novoFim.isBefore(agora4) || novoFim.isBefore(novoInicio) || durMin < 30) {
@@ -439,7 +430,6 @@ fun main() {
                             ev.fim = novoFim
                         }
 
-                        // tipo/modalidade/estorno
                         print("Alterar tipo? (s/n): "); val altTipo = (readLine()?.trim() ?: "n").lowercase()
                         if (altTipo == "s") {
                             val tipos = TipoEvento.entries
@@ -530,7 +520,6 @@ fun main() {
                 }
             }
 
-            // US10
             "11" -> {
                 print("E-mail do organizador: "); val emailOrg = readLine()?.trim() ?: ""
                 val org = usuarios.find { it.email.equals(emailOrg, ignoreCase = true) }
@@ -553,15 +542,11 @@ fun main() {
                 }
             }
 
-            // US11
             "12" -> {
-                val agora5 = LocalDateTime.now()
+                val agora5 = java.time.LocalDateTime.now()
                 val ativos = eventos.filter { ev ->
-                    // “eventos ativos na plataforma”
                     ev.ativo &&
-                        // “eventos que já finalizaram não devem aparecer”
                         ev.fim.isAfter(agora5) &&
-                        // “eventos esgotados não aparecem”
                         ingressos.count { it.eventoId == ev.id && it.status == StatusIngresso.ATIVO } < ev.capacidade
                 }
 
@@ -591,7 +576,6 @@ fun main() {
                 }
             }
 
-            // US12
             "13" -> {
                 print("E-mail do usuário comum: "); val email = readLine()?.trim() ?: ""
                 val u = usuarios.find { it.email.equals(email, ignoreCase = true) }
@@ -604,7 +588,7 @@ fun main() {
 
                     if (ev == null) println(" Evento não encontrado.")
                     else {
-                        val agora6 = LocalDateTime.now()
+                        val agora6 = java.time.LocalDateTime.now()
                         val vendidosEv = ingressos.count { it.eventoId == ev.id && it.status == StatusIngresso.ATIVO }
 
                         if (!ev.ativo) println(" Evento não está ativo.")
@@ -640,7 +624,6 @@ fun main() {
                 }
             }
 
-            // US13
             "14" -> {
                 print("E-mail do usuário: "); val email = readLine()?.trim() ?: ""
                 val u = usuarios.find { it.email.equals(email, ignoreCase = true) }
@@ -648,7 +631,6 @@ fun main() {
                 if (u == null) println(" Usuário não encontrado.")
                 else if (!u.ativo) println(" Usuário inativo.")
                 else {
-                    // listar ingressos do usuário para ele escolher melhor
                     val meus = ingressos.filter { it.usuarioId == u.id }
                     if (meus.isEmpty()) {
                         println("Sem ingressos para cancelar.")
@@ -673,7 +655,6 @@ fun main() {
                             } else {
                                 ing.status = StatusIngresso.CANCELADO
 
-                                // estorno conforme regras do evento
                                 if (ev.estornaEmCancelamento) {
                                     val taxa = ev.taxaEstornoPercent.coerceIn(0.0, 100.0)
                                     val estorno = ing.valorPago * (1.0 - taxa / 100.0)
@@ -682,8 +663,6 @@ fun main() {
                                     println(" Ingresso cancelado. Sem estorno (evento não estorna).")
                                 }
 
-                                // "evento deve ter livre mais um ingresso para venda"
-                                // (como a contagem de ingressos ativos diminuiu, a vaga já “volta” automaticamente)
                                 println("Vaga liberada para venda (contagem de ingressos ativos atualizada).")
                             }
                         }
@@ -691,7 +670,6 @@ fun main() {
                 }
             }
 
-            // US14
             "15" -> {
                 print("E-mail do usuário: "); val email = readLine()?.trim() ?: ""
                 val u = usuarios.find { it.email.equals(email, ignoreCase = true) }
@@ -703,9 +681,8 @@ fun main() {
                     if (meus.isEmpty()) {
                         println("Sem ingressos.")
                     } else {
-                        val agora7 = LocalDateTime.now()
+                        val agora7 = java.time.LocalDateTime.now()
 
-                        // Separa "primeiros": eventos ainda ativos e não realizados (ainda não acabou)
                         val primeiros = meus.filter { ing ->
                             ing.status == StatusIngresso.ATIVO &&
                                 run {
@@ -714,7 +691,6 @@ fun main() {
                                 }
                         }
 
-                        // "últimos": cancelados OU eventos já finalizados
                         val ultimos = meus.filter { ing ->
                             ing.status == StatusIngresso.CANCELADO ||
                                 run {
@@ -723,9 +699,9 @@ fun main() {
                                 }
                         }
 
-                        fun key(ing: Ingresso): Pair<LocalDateTime, String> {
+                        fun key(ing: Ingresso): Pair<java.time.LocalDateTime, String> {
                             val ev = eventos.find { it.id == ing.eventoId }
-                            val inicio = ev?.inicio ?: LocalDateTime.MIN
+                            val inicio = ev?.inicio ?: java.time.LocalDateTime.MIN
                             val nomeEv = ev?.nome ?: "Evento removido"
                             return Pair(inicio, nomeEv.lowercase())
                         }
